@@ -1,0 +1,42 @@
+use Test;
+use Asserter;
+
+plan 9;
+
+lives-ok { assert 1 };
+
+throws-like { my $val = 0; assert $val }, X::Assertion, message => 'Assertion failed: `$val` is not true; it evaluates to `0`';
+throws-like { assert 0, "message" }, X::Assertion, message => 'Assertion failed: message';
+
+
+throws-like { assert do { [4] andthen .elems > 2 ?? "hi" ~ " here" ~ ("and even " ~ Order::More.lc) !! Nil } },
+            X::Assertion,
+            message => 'Assertion failed: `do { [4] andthen .elems > 2 ?? "hi" ~ " here" ~ ("and even " ~ Order::More.lc) !! Nil }` is not true; it evaluates to `Nil`';
+
+throws-like { assert do { [4] andthen .elems > 2 ?? "hi" ~ " here" ~ ("and even " ~ Order::More.lc) !! Nil }, 27 but role { method Str { "Message" } } },
+            X::Assertion,
+            message => 'Assertion failed: Message';
+
+my $global = 0;
+sub side-effect-one {
+    $global++;
+    ""
+}
+sub side-effect-two {
+    $global++;
+    "something"
+}
+
+{ CATCH { when X::Assertion {} }; assert side-effect-one() };
+is $global, 1, "side-effect-one only got called once (condition False)";
+
+assert side-effect-two();
+is $global, 2, "side-effect-two only got called once (condition True)";
+
+assert 1, side-effect-one();
+is $global, 2, "if the condition is truthful, message is not evaluated";
+
+{ CATCH { when X::Assertion {} }; assert 0, side-effect-two() };
+is $global, 3, "if the condition is falseful, message is evaluated only once";
+
+done-testing;

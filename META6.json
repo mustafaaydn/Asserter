@@ -1,0 +1,10 @@
+{
+    "name": "Asserter",
+    "version": "0.1.0",
+    "description": "Be assertive in the form `assert EXPR, MESSAGE?`",
+    "raku": "6.d",
+    "provides": { "Asserter": "lib/Asserter.rakumod" },
+    "auth": "zef:witawayar",
+    "source-url": "https://github.com/mustafaaydn/Asserter",
+    "license": "Artistic-2.0"
+}
